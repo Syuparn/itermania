@@ -85,7 +85,7 @@ func Range[V constraints.Integer](start, stop, step V) Gen[V] {
 	}
 }
 
-// Where returns a generator iteraes values only when condGen is true.
+// Where returns a generator that iterates values only when condGen is true.
 func Where[V any](gen Gen[V], condGen Gen[bool]) Gen[V] {
 	return func() iter.Seq[V] {
 		return func(yield func(V) bool) {
@@ -128,6 +128,96 @@ func Bind[V, W any](gen Gen[V], f func(V) Gen[W]) Gen[W] {
 					if !yield(wVal) {
 						return
 					}
+				}
+			}
+		}
+	}
+}
+
+// If works as an if-expression for generators.
+//
+// NOTE: regardless of cond, both then and else are always evaluated
+func If[V any](condGen Gen[bool], thenGen Gen[V], elseGen Gen[V]) Gen[V] {
+	return func() iter.Seq[V] {
+		return func(yield func(V) bool) {
+			condSeq := condGen()
+			condNext, condStop := iter.Pull(condSeq)
+			defer condStop()
+
+			thenSeq := thenGen()
+			thenNext, thenStop := iter.Pull(thenSeq)
+			defer thenStop()
+
+			elseSeq := elseGen()
+			elseNext, elseStop := iter.Pull(elseSeq)
+			defer elseStop()
+
+			for {
+				c, ok := condNext()
+				if !ok {
+					return
+				}
+				t, ok := thenNext()
+				if !ok {
+					return
+				}
+				e, ok := elseNext()
+				if !ok {
+					return
+				}
+
+				result := e
+				if c {
+					result = t
+				}
+
+				if !yield(result) {
+					return
+				}
+			}
+		}
+	}
+}
+
+func All(gen Gen[bool]) Gen[bool] {
+	return func() iter.Seq[bool] {
+		return func(yield func(bool) bool) {
+			seq := gen()
+			for v := range seq {
+				if !v {
+					yield(false)
+					return
+				}
+			}
+
+			yield(true)
+		}
+	}
+}
+
+func Any(gen Gen[bool]) Gen[bool] {
+	return func() iter.Seq[bool] {
+		return func(yield func(bool) bool) {
+			seq := gen()
+			for v := range seq {
+				if v {
+					yield(true)
+					return
+				}
+			}
+
+			yield(false)
+		}
+	}
+}
+
+// Loop returns a generator to iterate the argument v infinitely.
+func Loop[V any](v V) Gen[V] {
+	return func() iter.Seq[V] {
+		return func(yield func(V) bool) {
+			for {
+				if !yield(v) {
+					return
 				}
 			}
 		}

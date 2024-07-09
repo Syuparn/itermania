@@ -255,3 +255,173 @@ func TestBind(t *testing.T) {
 		})
 	}
 }
+
+func TestIf(t *testing.T) {
+	tests := []struct {
+		name     string
+		condG    Gen[bool]
+		thenG    Gen[int]
+		elseG    Gen[int]
+		expected []int
+	}{
+		{
+			"then",
+			Const(true),
+			Const(1),
+			Const(2),
+			[]int{1},
+		},
+		{
+			"else",
+			Const(false),
+			Const(1),
+			Const(2),
+			[]int{2},
+		},
+		{
+			"multiple",
+			FromSlice([]bool{true, false}),
+			FromSlice([]int{1, 2}),
+			FromSlice([]int{3, 4}),
+			[]int{1, 4},
+		},
+		{
+			"cond is shorter",
+			FromSlice([]bool{true}),
+			FromSlice([]int{1, 2}),
+			FromSlice([]int{3, 4}),
+			[]int{1},
+		},
+		{
+			"then is shorter",
+			FromSlice([]bool{true, false}),
+			FromSlice([]int{1}),
+			FromSlice([]int{3, 4}),
+			[]int{1},
+		},
+		{
+			"else is shorter",
+			FromSlice([]bool{true, false}),
+			FromSlice([]int{1, 2}),
+			FromSlice([]int{3}),
+			[]int{1},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gen := If(tt.condG, tt.thenG, tt.elseG)
+			actual := ToSlice(gen)
+
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func TestAll(t *testing.T) {
+	tests := []struct {
+		name     string
+		gen      Gen[bool]
+		expected []bool
+	}{
+		{
+			"with false",
+			FromSlice([]bool{true, false}),
+			[]bool{false},
+		},
+		{
+			"without false",
+			FromSlice([]bool{true, true}),
+			[]bool{true},
+		},
+		{
+			"empty",
+			FromSlice([]bool{}),
+			[]bool{true},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gen := All(tt.gen)
+			actual := ToSlice(gen)
+
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func TestAny(t *testing.T) {
+	tests := []struct {
+		name     string
+		gen      Gen[bool]
+		expected []bool
+	}{
+		{
+			"with true",
+			FromSlice([]bool{true, false}),
+			[]bool{true},
+		},
+		{
+			"without true",
+			FromSlice([]bool{false, false}),
+			[]bool{false},
+		},
+		{
+			"empty",
+			FromSlice([]bool{}),
+			[]bool{false},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gen := Any(tt.gen)
+			actual := ToSlice(gen)
+
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func TestLoop(t *testing.T) {
+	t.Run("int", func(t *testing.T) {
+		gen := Loop(5)
+		seq := gen()
+
+		next, stop := iter.Pull(seq)
+		defer stop()
+
+		v, ok := next()
+		assert.Equal(t, 5, v)
+		assert.True(t, ok)
+
+		v, ok = next()
+		assert.Equal(t, 5, v)
+		assert.True(t, ok)
+
+		v, ok = next()
+		assert.Equal(t, 5, v)
+		assert.True(t, ok)
+	})
+
+	t.Run("string", func(t *testing.T) {
+		gen := Loop("foo")
+		seq := gen()
+
+		next, stop := iter.Pull(seq)
+		defer stop()
+
+		v, ok := next()
+		assert.Equal(t, "foo", v)
+		assert.True(t, ok)
+
+		v, ok = next()
+		assert.Equal(t, "foo", v)
+		assert.True(t, ok)
+
+		v, ok = next()
+		assert.Equal(t, "foo", v)
+		assert.True(t, ok)
+	})
+}
