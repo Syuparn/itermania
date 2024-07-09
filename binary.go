@@ -1,6 +1,10 @@
 package itermania
 
-import "iter"
+import (
+	"iter"
+
+	"golang.org/x/exp/constraints"
+)
 
 func And[V bool](xGen Gen[bool], yGen Gen[bool]) Gen[bool] {
 	bin := Bin(func(xVal bool, yVal bool) bool {
@@ -12,6 +16,83 @@ func And[V bool](xGen Gen[bool], yGen Gen[bool]) Gen[bool] {
 func Or[V bool](xGen Gen[bool], yGen Gen[bool]) Gen[bool] {
 	bin := Bin(func(xVal bool, yVal bool) bool {
 		return xVal || yVal
+	})
+	return bin(xGen, yGen)
+}
+
+func Eq[V comparable](xGen Gen[V], yGen Gen[V]) Gen[bool] {
+	bin := Bin(func(xVal V, yVal V) bool {
+		return xVal == yVal
+	})
+	return bin(xGen, yGen)
+}
+
+func Neq[V comparable](xGen Gen[V], yGen Gen[V]) Gen[bool] {
+	bin := Bin(func(xVal V, yVal V) bool {
+		return xVal != yVal
+	})
+	return bin(xGen, yGen)
+}
+
+func Gt[V constraints.Ordered](xGen Gen[V], yGen Gen[V]) Gen[bool] {
+	bin := Bin(func(xVal V, yVal V) bool {
+		return xVal > yVal
+	})
+	return bin(xGen, yGen)
+}
+
+func Lt[V constraints.Ordered](xGen Gen[V], yGen Gen[V]) Gen[bool] {
+	bin := Bin(func(xVal V, yVal V) bool {
+		return xVal < yVal
+	})
+	return bin(xGen, yGen)
+}
+
+func Ge[V constraints.Ordered](xGen Gen[V], yGen Gen[V]) Gen[bool] {
+	bin := Bin(func(xVal V, yVal V) bool {
+		return xVal >= yVal
+	})
+	return bin(xGen, yGen)
+}
+
+func Le[V constraints.Ordered](xGen Gen[V], yGen Gen[V]) Gen[bool] {
+	bin := Bin(func(xVal V, yVal V) bool {
+		return xVal <= yVal
+	})
+	return bin(xGen, yGen)
+}
+
+func Add[V constraints.Ordered](xGen Gen[V], yGen Gen[V]) Gen[V] {
+	bin := Bin(func(xVal V, yVal V) V {
+		return xVal + yVal
+	})
+	return bin(xGen, yGen)
+}
+
+func Sub[V Number](xGen Gen[V], yGen Gen[V]) Gen[V] {
+	bin := Bin(func(xVal V, yVal V) V {
+		return xVal - yVal
+	})
+	return bin(xGen, yGen)
+}
+
+func Mul[V Number](xGen Gen[V], yGen Gen[V]) Gen[V] {
+	bin := Bin(func(xVal V, yVal V) V {
+		return xVal * yVal
+	})
+	return bin(xGen, yGen)
+}
+
+func Div[V Number](xGen Gen[V], yGen Gen[V]) Gen[V] {
+	bin := Bin(func(xVal V, yVal V) V {
+		return xVal / yVal
+	})
+	return bin(xGen, yGen)
+}
+
+func Mod[V constraints.Integer](xGen Gen[V], yGen Gen[V]) Gen[V] {
+	bin := Bin(func(xVal V, yVal V) V {
+		return xVal % yVal
 	})
 	return bin(xGen, yGen)
 }

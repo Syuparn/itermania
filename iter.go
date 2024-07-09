@@ -84,3 +84,50 @@ func Range[V constraints.Integer](start, stop, step V) Gen[V] {
 		}
 	}
 }
+
+func Where[V any](gen Gen[V], condGen Gen[bool]) Gen[V] {
+	return func() iter.Seq[V] {
+		return func(yield func(V) bool) {
+			seq := gen()
+
+			condSeq := condGen()
+			condNext, condStop := iter.Pull(condSeq)
+			defer condStop()
+
+			for v := range seq {
+				cond, ok := condNext()
+				if !ok {
+					return
+				}
+
+				// skip if cond does not meet
+				if !cond {
+					continue
+				}
+
+				if !yield(v) {
+					return
+				}
+			}
+		}
+	}
+}
+
+func Bind[V, W any](gen Gen[V], f func(V) Gen[W]) Gen[W] {
+	return func() iter.Seq[W] {
+		return func(yield func(W) bool) {
+			seq := gen()
+
+			for vVal := range seq {
+				wGen := f(vVal)
+				wSeq := wGen()
+
+				for wVal := range wSeq {
+					if !yield(wVal) {
+						return
+					}
+				}
+			}
+		}
+	}
+}
