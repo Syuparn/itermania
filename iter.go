@@ -51,7 +51,7 @@ func Inc[V constraints.Integer](v V) Gen[V] {
 	}
 }
 
-// Inc returns a generator of integers decreasing by one from v.
+// Dec returns a generator of integers decreasing by one from v.
 func Dec[V constraints.Integer](v V) Gen[V] {
 	return func() iter.Seq[V] {
 		return func(yield func(V) bool) {
@@ -65,7 +65,7 @@ func Dec[V constraints.Integer](v V) Gen[V] {
 	}
 }
 
-// Inc returns a generator of integer range.
+// Range returns a generator of integer range.
 func Range[V constraints.Integer](start, stop, step V) Gen[V] {
 	return func() iter.Seq[V] {
 		return func(yield func(V) bool) {
@@ -85,6 +85,7 @@ func Range[V constraints.Integer](start, stop, step V) Gen[V] {
 	}
 }
 
+// Where returns a generator iteraes values only when condGen is true.
 func Where[V any](gen Gen[V], condGen Gen[bool]) Gen[V] {
 	return func() iter.Seq[V] {
 		return func(yield func(V) bool) {
@@ -113,6 +114,7 @@ func Where[V any](gen Gen[V], condGen Gen[bool]) Gen[V] {
 	}
 }
 
+// Bind applies f to each values iterated from gen.
 func Bind[V, W any](gen Gen[V], f func(V) Gen[W]) Gen[W] {
 	return func() iter.Seq[W] {
 		return func(yield func(W) bool) {
