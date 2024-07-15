@@ -256,6 +256,25 @@ func TestBind(t *testing.T) {
 	}
 }
 
+func TestBindMonadLaws(t *testing.T) {
+	f := func(x int) Gen[int] {
+		return Mul(Const(x), Const(2))
+	}
+	m := Range(1, 5, 1)
+	g := func(x int) Gen[int] {
+		return Add(Const(x), Const(1))
+	}
+
+	// (return x) >>= f == f x
+	assert.Equal(t, ToSlice(f(10)), ToSlice(Bind(Const(10), f)))
+
+	// m >>= return == m
+	assert.Equal(t, ToSlice(Bind(m, Const)), ToSlice(m))
+
+	// (m >>= f) >>= g == m >>= (\x -> f x >>= g)
+	assert.Equal(t, ToSlice(Bind(Bind(m, f), g)), ToSlice(Bind(m, func(x int) Gen[int] { return Bind(f(x), g) })))
+}
+
 func TestIf(t *testing.T) {
 	tests := []struct {
 		name     string
