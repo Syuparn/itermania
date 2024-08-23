@@ -19,7 +19,7 @@ func TestConst(t *testing.T) {
 		assert.Equal(t, 5, v)
 		assert.True(t, ok)
 
-		v, ok = next()
+		_, ok = next()
 		assert.False(t, ok)
 	})
 
@@ -34,7 +34,7 @@ func TestConst(t *testing.T) {
 		assert.Equal(t, "foo", v)
 		assert.True(t, ok)
 
-		v, ok = next()
+		_, ok = next()
 		assert.False(t, ok)
 	})
 }

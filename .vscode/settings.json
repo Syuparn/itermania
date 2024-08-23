@@ -1,0 +1,6 @@
+{
+    "go.toolsEnvVars": {
+        "GODEBUG": "gotypesalias=1",
+        "GOEXPERIMENT": "aliastypeparams"
+    }
+}

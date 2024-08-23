@@ -21,7 +21,7 @@ func TestFromSlice(t *testing.T) {
 	assert.Equal(t, 2, v)
 	assert.True(t, ok)
 
-	v, ok = next()
+	_, ok = next()
 	assert.False(t, ok)
 }
 

@@ -24,7 +24,7 @@ func Head[V any](gen Gen[V], n int) func() iter.Seq[V] {
 			seq := gen()
 			next, stop := iter.Pull(seq)
 			defer stop()
-			for _ = range n {
+			for range n {
 				v, ok := next()
 				if !ok {
 					return

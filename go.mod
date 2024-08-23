@@ -1,6 +1,6 @@
 module github.com/syuparn/itermania
 
-go 1.23rc1
+go 1.23
 
 require (
 	github.com/stretchr/testify v1.9.0
